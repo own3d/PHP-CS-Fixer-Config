@@ -1,5 +1,5 @@
 {
-    "name": "romanzipp/php-cs-fixer-config",
+    "name": "own3d/php-cs-fixer-config",
     "description": "Personal PHP-CS-Fixer Configuration",
     "license": "MIT",
     "type": "library",
