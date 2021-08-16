@@ -17,6 +17,13 @@ class PrettyPHP extends AbstractPreset
             'no_superfluous_phpdoc_tags' => false,      // https://github.com/FriendsOfPHP/PHP-CS-Fixer/blob/master/doc/rules/phpdoc/no_superfluous_phpdoc_tags.rst
             'no_useless_return' => true,                // https://github.com/FriendsOfPHP/PHP-CS-Fixer/blob/master/doc/rules/return_notation/no_useless_return.rst
             'not_operator_with_space' => true,          // https://github.com/FriendsOfPHP/PHP-CS-Fixer/blob/master/doc/rules/operator/not_operator_with_space.rst
+
+            // https://github.com/FriendsOfPHP/PHP-CS-Fixer/blob/master/doc/rules/control_structure/yoda_style.rst
+            'yoda_style' => [
+                'equal' => false,
+                'identical' => false,
+                'less_and_greater' => false
+            ],
             'phpdoc_align' => [                         // https://github.com/FriendsOfPHP/PHP-CS-Fixer/blob/master/doc/rules/phpdoc/phpdoc_align.rst
                 'align' => 'left',
             ],
