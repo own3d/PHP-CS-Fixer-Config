@@ -78,26 +78,14 @@ class ConfigTest extends TestCase
         self::assertArrayNotHasKey(__DIR__ . '/Files/ExcludedFolder/file.php', $files);
     }
 
-    public function testDynamicPrestUpdatesFinder()
+    public function testRiskyRules()
     {
-        $config = Config::make()
-            ->in(__DIR__ . '/Files')
-            ->preset(new TestPreset())
-            ->exclude('partially-excluded.php')
-            ->excludeDirectories('PartiallyExcludedFolder')
-            ->out();
+        $config = Config::make();
 
-        $files = iterator_to_array($config->getFinder()->getIterator());
+        self::assertFalse($config->config->getRiskyAllowed());
 
-        self::assertArrayHasKey(__DIR__ . '/Files/included.php', $files);
+        $config->allowRisky();
 
-        self::assertArrayNotHasKey(__DIR__ . '/Files/partially-excluded.php', $files);
-        self::assertArrayNotHasKey(__DIR__ . '/Files/excluded.php', $files);
-        self::assertArrayNotHasKey(__DIR__ . '/Files/foo.ignoreme.php', $files);
-
-        self::assertArrayHasKey(__DIR__ . '/Files/IncludedFolder/file.php', $files);
-
-        self::assertArrayNotHasKey(__DIR__ . '/Files/ExcludedFolder/file.php', $files);
-        self::assertArrayNotHasKey(__DIR__ . '/Files/PartiallyExcludedFolder/file.php', $files);
+        self::assertTrue($config->config->getRiskyAllowed());
     }
 }

@@ -29,7 +29,7 @@ final class Config
     /**
      * @var \romanzipp\Fixer\Presets\AbstractPreset[]
      */
-    private $presets = [];
+    private $presets;
 
     public function __construct()
     {
@@ -87,7 +87,39 @@ final class Config
      */
     public function in(string $workingDir): self
     {
-        $this->workingDir = $workingDir;
+        $this->finder->in(
+            $this->workingDir = $workingDir
+        );
+
+        return $this;
+    }
+
+    /**
+     * Allow risky rules.
+     *
+     * @param bool $allow
+     *
+     * @return $this
+     */
+    public function allowRisky(bool $allow = true): self
+    {
+        $this->config->setRiskyAllowed($allow);
+
+        return $this;
+    }
+
+    /**
+     * Add additional rules. Please rather use presets. Nonetheless, here you go.
+     *
+     * @param array $rules
+     *
+     * @return $this
+     */
+    public function withRules(array $rules): self
+    {
+        $this->updateDynamicPreset(static function (DynamicPreset $preset) use ($rules) {
+            $preset->rules = array_merge($preset->rules, $rules);
+        });
 
         return $this;
     }
@@ -101,17 +133,15 @@ final class Config
      */
     public function exclude($files): self
     {
-        array_walk($this->presets, function (AbstractPreset $preset) use ($files) {
-            if ($preset instanceof DynamicPreset) {
-                $preset->excludedFiles = array_merge($preset->excludedFiles, (array) $files);
-            }
+        $this->updateDynamicPreset(static function (DynamicPreset $preset) use ($files) {
+            $preset->excludedFiles = array_merge($preset->excludedFiles, (array) $files);
         });
 
         return $this;
     }
 
     /**
-     * Add single or many files to the list of excluded files.
+     * Add single or many directories to the list of excluded directories.
      *
      * @param array|string $directories
      *
@@ -119,10 +149,8 @@ final class Config
      */
     public function excludeDirectories($directories): self
     {
-        array_walk($this->presets, static function (AbstractPreset $preset) use ($directories) {
-            if ($preset instanceof DynamicPreset) {
-                $preset->excludedDirectories = array_merge($preset->excludedDirectories, (array) $directories);
-            }
+        $this->updateDynamicPreset(static function (DynamicPreset $preset) use ($directories) {
+            $preset->excludedDirectories = array_merge($preset->excludedDirectories, (array) $directories);
         });
 
         return $this;
@@ -157,6 +185,20 @@ final class Config
     }
 
     /**
+     * Run a given callback on the dynamic preset.
+     *
+     * @param \Closure $callback
+     */
+    private function updateDynamicPreset(Closure $callback): void
+    {
+        array_walk($this->presets, static function (AbstractPreset $preset) use ($callback) {
+            if ($preset instanceof DynamicPreset) {
+                $callback($preset);
+            }
+        });
+    }
+
+    /**
      * Generate the php-cs-fixer config for final return.
      *
      * @return \PhpCsFixer\Config
@@ -164,10 +206,8 @@ final class Config
     public function out(): BaseConfig
     {
         if (null === $this->workingDir) {
-            throw new RuntimeException('The working dir has not been set');
+            throw new RuntimeException('The working dir has not been set. Please specify the `in()` method');
         }
-
-        $this->finder->in($this->workingDir);
 
         // Note: We don't need to merge all finder configuration values since this
         // is already done internally by the symfony finder instance.
